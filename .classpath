@@ -8,7 +8,7 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.core.contenttype_3.7.400.v20190624-1144.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.core.jobs_3.10.500.v20190620-1426.jar"/>
-	<classpathentry kind="lib" path="lib/org.eclipse.core.resources_3.13.500.v20190819-0800.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.resources_3.13.500.v20190819-0800.jar" sourcepath="lib/org.eclipse.core.resources.source_3.13.500.v20190819-0800.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.core.resources.source_3.13.500.v20190819-0800.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.core.runtime_3.16.0.v20190823-1314.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.core.runtime.source_3.16.0.v20190823-1314.jar"/>

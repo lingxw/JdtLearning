@@ -1,5 +1,6 @@
 package ling.learning.jdt.astvisitor;
 
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -10,7 +11,7 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SimpleType;
 
 public class TypeResoveVisitor extends ASTVisitor {
-	
+		
 	public boolean visit(SimpleType node){
 		String line = "";
 
@@ -56,7 +57,25 @@ public class TypeResoveVisitor extends ASTVisitor {
 					" > type binding key:%s"
 					, binding.getKey()
 					);
-			System.out.println(line);
+			System.out.println(line);	
+			//if parser by Java model, the following code can get type's jar and class.
+			//but if paser by ProjectParser.java, because Java Element is null, it cann't get type's jar and class.
+			IJavaElement element = binding.getJavaElement();
+			if(element != null) {
+				line = String.format(
+						" > type binding jar path:%s"
+						, element.getPath()
+						);
+				System.out.println(line);
+				element = element.getParent();
+				if(element != null) {
+					line = String.format(
+							" > type binding class name:%s"
+							, element.getElementName()
+							);
+					System.out.println(line);
+				}
+			}
 		}
 
 		return true;

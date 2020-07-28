@@ -29,7 +29,8 @@ public class ProjectParser {
 		parser.setResolveBindings(needResolve); // enable binding analyze
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setBindingsRecovery(needResolve);
-		
+		parser.setStatementsRecovery(needResolve);
+
 		//to set the options of java core
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
