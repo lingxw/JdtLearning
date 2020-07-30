@@ -8,6 +8,7 @@ public class ParsingEnvironment {
 	List<String> lstSrcPath   = new ArrayList<String>();
 	List<String> lstClassPath = new ArrayList<String>();
 	List<String> lstCodePages = new ArrayList<String>();
+	List<String> lstFilePath   = new ArrayList<String>();
 	
 	String filePath = null;
 	String fileName = null;
@@ -49,6 +50,19 @@ public class ParsingEnvironment {
 	}
 	public void addCodePage(String cp) {
 		this.lstCodePages.add(cp);	
+	}
+	
+	public List<String> getLstFilePath() {
+		return lstFilePath;
+	}
+	public String[] getFilePathArray() {
+		return this.lstFilePath.toArray(new String[0]);
+	}
+	public void setLstFilePath(List<String> lstSrcPath) {
+		this.lstFilePath = lstSrcPath;
+	}
+	public void addFilePath(String path) {
+		this.lstFilePath.add(path);
 	}
 	
 	public String getFilePath() {
