@@ -52,15 +52,15 @@ public class App {
 		ProjectParser parser = new ProjectParser(true);
 		TypeFinderVisitor visitor = new TypeFinderVisitor();
 		
-		//parser.ParseFilesInDir("../testproj", visitor);
-		parser.ParseFilesInDir("./", visitor);//JdtLearning
+		//parser.ParseFilesInDir("../testproj", visitor, false);
+		parser.ParseFilesInDir("./", visitor, true);//JdtLearning
 	}
 	
 	public static void test4() throws IOException {
 		ProjectParser parser = new ProjectParser(true);
 		TypeResoveVisitor visitor = new TypeResoveVisitor();
 		
-		//parser.ParseFilesInDir("../testproj", visitor);
-		parser.ParseFilesInDir("./", visitor);//JdtLearning
+		//parser.ParseFilesInDir("../testproj", visitor, false);
+		parser.ParseFilesInDir("./", visitor, true);//JdtLearning
 	}
 }

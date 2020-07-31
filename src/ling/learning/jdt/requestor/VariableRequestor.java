@@ -1,25 +1,23 @@
 package ling.learning.jdt.requestor;
 
-import java.util.List;
-
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
-import org.eclipse.jdt.internal.compiler.batch.FileSystem.Classpath;
 
 import ling.learning.jdt.astvisitor.TypeResoveVisitor;
+import ling.learning.jdt.jar.resolver.StrongFileSystem;
 
 public class VariableRequestor extends FileASTRequestor {
 
 	private ASTVisitor visitor;
-	private List<Classpath> classpaths;
+	private StrongFileSystem fileSystem;
 	
-	public VariableRequestor(ASTVisitor visitor, List<Classpath> classpaths) {
+	public VariableRequestor(ASTVisitor visitor, StrongFileSystem fileSystem) {
 		this.visitor = visitor;
-		this.classpaths = classpaths;
+		this.fileSystem = fileSystem;
 		
 		if(this.visitor instanceof TypeResoveVisitor) {
-			((TypeResoveVisitor)this.visitor).setClasspaths(classpaths);
+			((TypeResoveVisitor)this.visitor).setFileSystem(fileSystem);
 		}
 	}
 	

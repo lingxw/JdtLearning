@@ -2,8 +2,6 @@ package ling.learning.jdt.parser;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +11,9 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
-import org.eclipse.jdt.internal.compiler.batch.Main;
-import org.eclipse.jdt.internal.compiler.batch.FileSystem.Classpath;
 
 import ling.learning.common.FileUtil;
+import ling.learning.jdt.jar.resolver.StrongFileSystem;
 import ling.learning.jdt.requestor.VariableRequestor;
 
 public class ProjectParser {
@@ -41,52 +38,25 @@ public class ProjectParser {
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
 		parser.setCompilerOptions(options);
 		parser.setEnvironment(pe.getClassPathArray(),pe.getSrcPathArray(),pe.getCodePageArray(),true);
-		List<Classpath> classpaths = getClasspath(pe.getClassPathArray(),pe.getSrcPathArray(),pe.getCodePageArray(),true);
+		//StrongFileSystem fileSystem = StrongFileSystem.newFileSystem(pe.getClassPathArray(),pe.getSrcPathArray(),pe.getCodePageArray(),true);
+		StrongFileSystem fileSystem = StrongFileSystem.newFileSystem(pe);
 		
 		String[] bindingKeys = new String[] {};
-		FileASTRequestor requestor = new VariableRequestor(visitor, classpaths);
+		FileASTRequestor requestor = new VariableRequestor(visitor, fileSystem);
 		
 		parser.createASTs(pe.getFilePathArray(), null, bindingKeys, requestor, null);
 	}
 	
-	private List<Classpath> getClasspath(String[] classpaths, String[] sourcepaths, String[] sourcepathsEncodings, boolean includeRunningVMBootclasspath) throws IllegalStateException {
-		Main main = new Main(new PrintWriter(System.out), new PrintWriter(System.err), false/*systemExit*/, null/*options*/, null/*progress*/);
-		ArrayList<Classpath> allClasspaths = new ArrayList<Classpath>();
-		try {
-			if (includeRunningVMBootclasspath) {
-				org.eclipse.jdt.internal.compiler.util.Util.collectRunningVMBootclasspath(allClasspaths);
-			}
-			if (sourcepaths != null) {
-				for (int i = 0, max = sourcepaths.length; i < max; i++) {
-					String encoding = sourcepathsEncodings == null ? null : sourcepathsEncodings[i];
-					main.processPathEntries(
-							Main.DEFAULT_SIZE_CLASSPATH,
-							allClasspaths, sourcepaths[i], encoding, true, false);
-				}
-			}
-			if (classpaths != null) {
-				for (int i = 0, max = classpaths.length; i < max; i++) {
-					main.processPathEntries(
-							Main.DEFAULT_SIZE_CLASSPATH,
-							allClasspaths, classpaths[i], null, false, false);
-				}
-			}
-			ArrayList pendingErrors = main.pendingErrors;
-			if (pendingErrors != null && pendingErrors.size() != 0) {
-				throw new IllegalStateException("invalid environment settings"); //$NON-NLS-1$
-			}
-		} catch (IllegalArgumentException e) {
-			throw new IllegalStateException("invalid environment settings", e); //$NON-NLS-1$
-		}
-		return allClasspaths;
-	}
+
 	
 	// loop directory to get file list
-	public void ParseFilesInDir(String projectPath, ASTVisitor visitor) throws IOException {
+	public void ParseFilesInDir(String projectPath, ASTVisitor visitor, boolean bSourceJar) throws IOException {
 		File project = new File(projectPath);
-		
+		String projectPath2 = project.getCanonicalPath();
+		String projectName = projectPath2.substring(projectPath2.lastIndexOf(File.separator) + 1);
+				
 		System.out.println("Java Project Parser starting!");
-		System.out.println("Java Project [" + project.getCanonicalPath() + "] Parsing start" );
+		System.out.println("Java Project [" + projectPath2 + "] Parsing start" );
 		//get all the parsing target
 		String srcPath = project.getCanonicalPath() + File.separator + "src" + File.separator;
 		List<File> listFiles = FileUtil.GetAllFiles(srcPath);
@@ -96,13 +66,19 @@ public class ProjectParser {
 		String libPath = project.getCanonicalPath() + File.separator + "lib" + File.separator;
 		List<File> listLib = FileUtil.GetAllFiles(libPath);
 		HashMap<String, String> mapClasspath = new HashMap<String, String>();
-		for(File f: listLib) {
-			String jarFile = f.getAbsolutePath();
-			int find = f.getName().indexOf('_');
-			if(find != -1) {
-				String packageName = f.getName().substring(0, find);
-				if (packageName.endsWith(".source")) {
-					mapClasspath.put(packageName, jarFile);
+		
+
+		pe.setProjectPath(projectPath2);
+		pe.setProjectJar(projectName + ".jar");
+		if (bSourceJar) {
+			for(File f: listLib) {
+				String jarFile = f.getAbsolutePath();
+				int find = f.getName().indexOf('_');
+				if(find != -1) {
+					String packageName = f.getName().substring(0, find);
+					if (packageName.endsWith(".source")) {
+						mapClasspath.put(packageName, jarFile);
+					}
 				}
 			}
 		}
@@ -120,13 +96,17 @@ public class ProjectParser {
 			if (packageName.endsWith(".source")) {
 				continue;
 			}
-//			if(mapClasspath.containsKey(packageName + ".source")) {
-//				pe.addSrcPath(mapClasspath.get(packageName + ".source"));
-//				pe.addCodePage("UTF-8");
-//			} else {
-//				pe.addClassPath(jarFile);
-//			}
-			pe.addClassPath(jarFile);
+			
+			if (bSourceJar) {
+				if(mapClasspath.containsKey(packageName + ".source")) {
+					pe.addSrcPath(mapClasspath.get(packageName + ".source"));
+					pe.addCodePage("UTF-8");
+				} else {
+					pe.addClassPath(jarFile);
+				}
+			} else {
+				pe.addClassPath(jarFile);
+			}
 		}
 		
 		for (File f : listFiles) {
@@ -135,6 +115,6 @@ public class ProjectParser {
 		}
 		
 		analyze(pe, visitor);
-		System.out.println("Java Project [" + project.getCanonicalPath() + "] Parsing finished" );
+		System.out.println("Java Project [" + projectPath2 + "] Parsing finished" );
 	}
 }

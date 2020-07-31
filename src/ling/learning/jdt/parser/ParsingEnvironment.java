@@ -5,6 +5,10 @@ import java.util.List;
 
 public class ParsingEnvironment {
 	
+	String projectPath = null;
+	String projectJar = null;
+	boolean includeRunningVMBootclasspath = true;
+	
 	List<String> lstSrcPath   = new ArrayList<String>();
 	List<String> lstClassPath = new ArrayList<String>();
 	List<String> lstCodePages = new ArrayList<String>();
@@ -12,7 +16,25 @@ public class ParsingEnvironment {
 	
 	String filePath = null;
 	String fileName = null;
-
+	
+	public String getProjectPath() {
+		return projectPath;
+	}
+	public void setProjectPath(String projectPath) {
+		this.projectPath = projectPath;
+	}
+	public String getProjectJar() {
+		return projectJar;
+	}
+	public void setProjectJar(String projectJar) {
+		this.projectJar = projectJar;
+	}
+	public boolean isIncludeRunningVMBootclasspath() {
+		return includeRunningVMBootclasspath;
+	}
+	public void setIncludeRunningVMBootclasspath(boolean includeRunningVMBootclasspath) {
+		this.includeRunningVMBootclasspath = includeRunningVMBootclasspath;
+	}
 	public List<String> getLstSrcPath() {
 		return lstSrcPath;
 	}

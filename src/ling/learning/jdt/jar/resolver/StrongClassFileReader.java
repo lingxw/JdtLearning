@@ -17,7 +17,7 @@
  *     Andy Clement (GoPivotal, Inc) aclement@gopivotal.com - Contributions for
  *         						bug 407191 - [1.8] Binary access support for type annotations
  *******************************************************************************/
-package ling.learning.jdt.resolver;
+package ling.learning.jdt.jar.resolver;
 
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException;
@@ -33,16 +33,16 @@ import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 
 public class StrongClassFileReader implements IBinaryType {
 	
-	private java.util.zip.ZipFile zip;
+	private java.util.zip.ZipFile zipFile;
 	private ClassFileReader binding;
 	
-	public StrongClassFileReader(java.util.zip.ZipFile zip, ClassFileReader binding) throws ClassFormatException {
-		this.zip = zip;
+	public StrongClassFileReader(java.util.zip.ZipFile zipFile, ClassFileReader binding) throws ClassFormatException {
+		this.zipFile = zipFile;
 		this.binding = binding;
 	}
 
-	public java.util.zip.ZipFile getZip() {
-		return zip;
+	public java.util.zip.ZipFile getZipFile() {
+		return zipFile;
 	}
 	
 	public ClassFileReader getBinding() {

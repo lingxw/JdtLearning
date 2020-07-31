@@ -13,30 +13,18 @@ import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SimpleType;
-import org.eclipse.jdt.internal.compiler.batch.FileSystem.Classpath;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 
-import ling.learning.jdt.resolver.StrongClassFileReader;
-import ling.learning.jdt.resolver.StrongFileSystem;
+import ling.learning.jdt.jar.resolver.StrongClassFileReader;
+import ling.learning.jdt.jar.resolver.StrongCompilationUnit;
+import ling.learning.jdt.jar.resolver.StrongFileSystem;
 
 public class TypeResoveVisitor extends ASTVisitor {
 	
-	private List<Classpath> classpaths = null;
 	private StrongFileSystem fileSystem = null;
 	
-	public void setClasspaths(List<Classpath> classpaths) {
-		this.classpaths = classpaths;
-		
-		Classpath[] allEntries = new Classpath[classpaths.size()];
-		classpaths.toArray(allEntries);
-		
-		List<String> listEntries = new ArrayList<String>();
-		for(int n = 0, max = allEntries.length; n < max; n++) {
-			listEntries.add(allEntries[n].getPath());
-		}
-		String[] entries = new String[listEntries.size()];
-		listEntries.toArray(entries);
-		fileSystem= new StrongFileSystem(entries, null, "UTF-8");
+	public void setFileSystem(StrongFileSystem fileSystem) {
+		this.fileSystem = fileSystem;
 	}
 	
 	public NameEnvironmentAnswer findType(ITypeBinding binding) {
@@ -84,26 +72,6 @@ public class TypeResoveVisitor extends ASTVisitor {
 		
 		ITypeBinding binding = node.resolveBinding();
 		if (binding != null) {
-			line = String.format(
-					" > type binding name:%s"
-					, binding.getName()
-					);
-			System.out.println(line);
-			line = String.format(
-					" > type binding qualified name:%s"
-					, binding.getQualifiedName()
-					);
-			System.out.println(line);
-			line = String.format(
-					" > type binding binary name:%s"
-					, binding.getBinaryName()
-					);
-			System.out.println(line);
-			line = String.format(
-					" > type binding key:%s"
-					, binding.getKey()
-					);
-			System.out.println(line);
 			print(binding, "type binding");
 		}
 
@@ -222,14 +190,40 @@ public class TypeResoveVisitor extends ASTVisitor {
 					result[1] = element.getElementName();
 				}
 			} else {
+				if(typebinding.isFromSource()) {
+					String key = typebinding.getKey();
+					int nFind = key.indexOf('<');
+					if (nFind != -1) {
+						key = key.substring(1,nFind);
+					} else {
+						//key = key.substring(1, key.length() - 1);
+					}
+					nFind = key.indexOf(fileSystem.getEnvironment().getProjectPath());
+					if(nFind != -1) {
+						//String fileName = key.substring(key.indexOf('~') + 1);
+						//String filePath = key.substring(0, nFind);
+						//key = filePath + fileName + ".java";
+						result[0] = fileSystem.getEnvironment().getProjectJar();
+						//result[1] = key;
+						result[1] = typebinding.getBinaryName().replace('.', '/') + ".java";
+						return result;
+					}
+				}
+				
 				NameEnvironmentAnswer answer = findType(typebinding);
 				
-				if(answer != null 
-						&& answer.getBinaryType() != null) {
-					if (answer.getBinaryType() instanceof StrongClassFileReader) {
-						result[0] = new String (((StrongClassFileReader)answer.getBinaryType()).getZip().getName());
+				if(answer != null) {
+					if(answer.getBinaryType() != null) {
+						if (answer.getBinaryType() instanceof StrongClassFileReader) {
+							result[0] = new String (((StrongClassFileReader)answer.getBinaryType()).getZipFile().getName());
+						}
+						result[1] = new String (answer.getBinaryType().getFileName());
+					} else if(answer.getCompilationUnit() != null){
+						if (answer.getCompilationUnit() instanceof StrongCompilationUnit) {
+							result[0] = new String (((StrongCompilationUnit)answer.getCompilationUnit()).getZipFile().getName());
+						}
+						result[1] = new String (answer.getCompilationUnit().getFileName());
 					}
-					result[1] = new String (answer.getBinaryType().getFileName());
 				}
 			}
 		}
@@ -237,8 +231,33 @@ public class TypeResoveVisitor extends ASTVisitor {
 	}
 	
 	void print(ITypeBinding typebinding, String head) {
+		if(typebinding == null)
+			return;
+		String line = String.format(
+				" > %s name:%s"
+				, head
+				, typebinding.getName()
+				);
+		System.out.println(line);
+		line = String.format(
+				" > %s qualified name:%s"
+				, head
+				, typebinding.getQualifiedName()
+				);
+		System.out.println(line);
+		line = String.format(
+				" > %s binary name:%s"
+				, head
+				, typebinding.getBinaryName()
+				);
+		System.out.println(line);
+		line = String.format(
+				" > %s key:%s"
+				, head
+				, typebinding.getKey()
+				);
+		System.out.println(line);
 		String[] paths = getTypePath(typebinding);
-		String line = "";
 		if(paths[0] != null) {
 			line = String.format(
 					" > %s jar path:%s"
@@ -249,7 +268,7 @@ public class TypeResoveVisitor extends ASTVisitor {
 		}
 		if(paths[1] != null) {
 			line = String.format(
-					" > %s class name:%s"
+					" > %s file name:%s"
 					, head
 					, paths[1]
 					);

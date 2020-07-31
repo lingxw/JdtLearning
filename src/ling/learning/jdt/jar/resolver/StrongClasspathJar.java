@@ -1,4 +1,4 @@
-package ling.learning.jdt.resolver;
+package ling.learning.jdt.jar.resolver;
 
 import java.io.File;
 import java.io.IOException;
