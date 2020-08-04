@@ -8,6 +8,8 @@ public class ParsingEnvironment {
 	String projectPath = null;
 	String projectJar = null;
 	boolean includeRunningVMBootclasspath = true;
+	String javaVersion = null;
+	String dumpPath = null;
 	
 	List<String> lstSrcPath   = new ArrayList<String>();
 	List<String> lstClassPath = new ArrayList<String>();
@@ -34,6 +36,18 @@ public class ParsingEnvironment {
 	}
 	public void setIncludeRunningVMBootclasspath(boolean includeRunningVMBootclasspath) {
 		this.includeRunningVMBootclasspath = includeRunningVMBootclasspath;
+	}
+	public String getDumpPath() {
+		return dumpPath;
+	}
+	public void setDumpPath(String dumpPath) {
+		this.dumpPath = dumpPath;
+	}
+	public String getJavaVersion() {
+		return javaVersion;
+	}
+	public void setJavaVersion(String javaVersion) {
+		this.javaVersion = javaVersion;
 	}
 	public List<String> getLstSrcPath() {
 		return lstSrcPath;

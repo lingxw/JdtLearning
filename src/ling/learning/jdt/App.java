@@ -25,8 +25,14 @@ public class App {
 		case 3:
 			test3();
 			break;
-		default:
+		case 4:
 			test4();
+			break;
+		case 5:
+			test5();
+			break;
+		default:
+			test6();
 			break;
 		}
 	}
@@ -62,5 +68,16 @@ public class App {
 		
 		//parser.ParseFilesInDir("../testproj", visitor, false);
 		parser.ParseFilesInDir("./", visitor, true);//JdtLearning
+	}
+	
+	public static void test5() throws IOException {
+		ProjectParser parser = new ProjectParser(true);
+		parser.ParseFilesInDir("./", null, true);//JdtLearning
+	}
+	
+	public static void test6() throws IOException {
+		ProjectParser parser = new ProjectParser(true);
+
+		parser.analyze("./");//JdtLearning
 	}
 }

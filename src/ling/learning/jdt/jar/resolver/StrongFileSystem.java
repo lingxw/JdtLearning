@@ -4,14 +4,18 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.compiler.batch.ClasspathJar;
 import org.eclipse.jdt.internal.compiler.batch.ClasspathJmod;
 import org.eclipse.jdt.internal.compiler.batch.ClasspathMultiReleaseJar;
 import org.eclipse.jdt.internal.compiler.batch.ClasspathSourceJar;
 import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.batch.Main;
+import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 
 import ling.learning.jdt.parser.ParsingEnvironment;
 
@@ -90,6 +94,78 @@ public class StrongFileSystem extends FileSystem{
 			allEntries[n] = classPath;
 		}
 		return allEntries;
+	}
+	
+	public NameEnvironmentAnswer findType(ITypeBinding binding) {
+		char[] typeName = null;
+		String qualifiedTypeName = binding.getBinaryName();
+		if(binding.isArray()) {
+			qualifiedTypeName = qualifiedTypeName.substring(binding.getDimensions());
+		}
+		if(qualifiedTypeName.endsWith(";")) {
+			qualifiedTypeName = qualifiedTypeName.substring(1, qualifiedTypeName.length() - 1);
+		}
+		String[] packageName = qualifiedTypeName.replace('.', '/').split("/"); 
+		List<char[]> listPackage = new ArrayList<char[]>();
+		for(int n = 0, max = packageName.length - 1; n < max; n++) {
+			listPackage.add(packageName[n].toCharArray());
+		}
+		if(!listPackage.isEmpty()) {
+			typeName = packageName[packageName.length - 1].toCharArray();
+		}
+		char[][] packages = new char[listPackage.size()][];
+		listPackage.toArray(packages);
+		return findType(typeName, packages);
+	}
+	
+	public String[] getTypePath(ITypeBinding binding) {
+		String[] result = new String[] {null, null};
+		String line = "";
+		if(binding != null) {
+			//if parser by Java model, the following code can get type's jar and class.
+			//but if paser by ProjectParser.java, because Java Element is null, it cann't get type's jar and class.
+			IJavaElement element = binding.getJavaElement();
+			if(element != null) {
+				result[0] = element.getPath().toString();
+				element = element.getParent();
+				if(element != null) {
+					result[1] = element.getElementName();
+				}
+			} else {
+				if(binding.isFromSource()) {
+					String key = binding.getKey();
+					int nFind = key.indexOf('<');
+					if (nFind != -1) {
+						key = key.substring(1,nFind);
+					}
+					nFind = key.indexOf(getEnvironment().getProjectPath());
+					if(nFind != -1) {
+						result[0] = getEnvironment().getProjectJar();
+						result[1] = binding.getBinaryName().replace('.', '/') + ".java";
+						if(binding.isArray()) {
+							result[1] = result[1].substring(binding.getDimensions() + 1);
+						}
+						
+						return result;
+					}
+				}
+				NameEnvironmentAnswer answer = findType(binding);
+				if(answer != null) {
+					if(answer.getBinaryType() != null) {
+						if (answer.getBinaryType() instanceof StrongClassFileReader) {
+							result[0] = new String (((StrongClassFileReader)answer.getBinaryType()).getZipFile().getName());
+						}
+						result[1] = new String (answer.getBinaryType().getFileName());
+					} else if(answer.getCompilationUnit() != null){
+						if (answer.getCompilationUnit() instanceof StrongCompilationUnit) {
+							result[0] = new String (((StrongCompilationUnit)answer.getCompilationUnit()).getZipFile().getName());
+						}
+						result[1] = new String (answer.getCompilationUnit().getFileName());
+					}
+				}
+			}
+		}
+		return result;
 	}
 	
 	private static String convertPathSeparators(String path) {

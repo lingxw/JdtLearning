@@ -29,6 +29,26 @@ public class FileUtil {
 		
 	}
 	
+	public static  List<String> GetAllFilesPath(String dirPath) {
+		
+		List<String> listFiles = new ArrayList<String>();
+		
+		File curr = new File(dirPath);
+		File[] childList = curr.listFiles();
+		for(File child : childList) {
+			
+			if(child.isFile()) {
+				listFiles.add(child.getAbsolutePath());
+			}else if( child.isDirectory()) {
+				List<String> tempList = GetAllFilesPath(child.getAbsolutePath());
+				listFiles.addAll(tempList);
+			}
+		}	
+		
+		return listFiles;		
+		
+	}
+	
 	public static String readFileToString(String filePath) throws IOException {
 		
 		StringBuilder fileData = new StringBuilder(1000);
